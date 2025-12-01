@@ -1,98 +1,127 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import {View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity} from 'react-native';
+import Svg, { ClipPath, Path, Image as SvgImage } from 'react-native-svg';
+import {FontAwesome6} from "@expo/vector-icons";
+import Feather from "@expo/vector-icons/Feather";
+import {useRouter} from "expo-router";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const { width: screenWidth } = Dimensions.get('window');
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+export default function ProfileScreen() {
+    const router = useRouter();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+    return (
+        <ScrollView style={styles.container}>
+            <Svg
+                width={screenWidth}
+                height={320}
+                viewBox="0 0 375 300"
+                style={styles.svg}
+            >
+                <ClipPath id="clip">
+                    <Path
+                        d="M375 282C375 282 327.5 300 187.5 300C47.5 300 0 282 0 282V0H375V282Z"
+                    />
+                </ClipPath>
+                <SvgImage
+                    href={require('../../assets/images/avatar.png')}
+                    width={screenWidth}
+                    height={320}
+                    preserveAspectRatio="xMidYMid slice"
+                    clipPath="url(#clip)"
+                />
+            </Svg>
+            <Text style={styles.name}>Noel Blanchard</Text>
+            <View style={styles.balanceContainer}>
+                <View style={{backgroundColor: '#49B3E4', borderRadius: 100, display: "flex", flexDirection: "row", width: 40, height: 40, justifyContent: "center", alignItems: "center"}}>
+                    <FontAwesome6 name="coins" size={18} color="white" />
+                </View>
+                <Text style={{fontSize: 14, fontWeight: 400, marginTop: 5, color: "#838BA7"}}>Your current balance</Text>
+                <Text style={{fontSize: 28, fontWeight: 600, marginTop: 10, color: "#252525"}}>3 422.00 OMR</Text>
+            </View>
+            <View style={{flexDirection: "row", alignItems: "center", marginHorizontal: 20, marginTop: 15}}>
+                <Text style={{color: "#252525", fontSize: 20, fontWeight: 600}}>Transactions</Text>
+                <TouchableOpacity style={{flexDirection: "row", alignItems : "center", justifyContent: "center", padding: 10, marginLeft: "auto", backgroundColor: "white", borderRadius: 15, paddingHorizontal: 15, borderStyle: "solid", borderWidth: 1, borderColor: "#EAEBF0"}}
+                                  onPress={() => router.push("/(transactions)/list")}
+                >
+                    <Text style={{color: "#252525", fontWeight: 600}}>All</Text>
+                    <Feather name="chevron-right" size={18} color="#252525" />
+                </TouchableOpacity>
+            </View>
+            <View style={{marginTop: 20, borderTopRightRadius: 20, borderTopLeftRadius: 20, backgroundColor: "white", padding: 20}}>
+                <View>
+                    <Text style={{color: "#838BA7", fontWeight: 600, fontSize: 14}}>May 02 • 2025</Text>
+                    <View style={{flexDirection: "row", alignItems: "center", paddingHorizontal: 15, paddingVertical: 10, backgroundColor: "white", borderRadius: 20, borderStyle: "solid", borderWidth: 1, borderColor: "#EAEBF0", marginTop: 10}}>
+                        <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#FBE5E7", justifyContent: "center", alignItems: "center"}}>
+                            <Feather name="arrow-up-right" size={22} color="#DF3C4C" />
+                        </View>
+                        <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Outcome</Text>
+                        <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#DD584C"}}>+2 652 OMR</Text>
+                    </View>
+                </View>
+                <View style={{marginTop: 20, paddingBottom: 120}}>
+                    <Text style={{color: "#838BA7", fontWeight: 600, fontSize: 14}}>May 02 • 2025</Text>
+                    <View style={{marginTop: 10, borderStyle: "solid", borderWidth: 1, borderRadius: 20, paddingHorizontal: 20, borderColor: "#EAEBF0"}}>
+                        <View style={{flexDirection: "row", alignItems: "center", borderStyle: "solid", borderBottomWidth: 1, borderColor: "#EAEBF0", marginTop: 10, paddingBottom: 10}}>
+                            <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#EAFBE5", justifyContent: "center", alignItems: "center"}}>
+                                <Feather name="arrow-down-left" size={22} color="#2DB66D" />
+                            </View>
+                            <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Income</Text>
+                            <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#2DB66D"}}>+15 248 OMR</Text>
+                        </View>
+                        <View style={{flexDirection: "row", alignItems: "center", borderStyle: "solid", borderBottomWidth: 1, borderColor: "#EAEBF0", marginTop: 10, paddingBottom: 10}}>
+                            <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#EAFBE5", justifyContent: "center", alignItems: "center"}}>
+                                <Feather name="arrow-down-left" size={22} color="#2DB66D" />
+                            </View>
+                            <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Income</Text>
+                            <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#2DB66D"}}>+3 422 OMR</Text>
+                        </View>
+                        <View style={{flexDirection: "row", alignItems: "center", paddingBottom: 10, marginTop: 10}}>
+                            <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#FBE5E7", justifyContent: "center", alignItems: "center"}}>
+                                <Feather name="arrow-up-right" size={22} color="#DF3C4C" />
+                            </View>
+                            <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Outcome</Text>
+                            <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#DD584C"}}>+2 652 OMR</Text>
+                        </View>
+                    </View>
+                </View>
+            </View>
+        </ScrollView>
+    );
 }
-
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+    container: {
+        flex: 1,
+        backgroundColor: '#F6F6F9',
+        marginTop: -10,
+    },
+    svg: {
+        margin: 0,
+        padding: 0,
+    },
+    name: {
+        fontSize: 32,
+        fontWeight: 600,
+        textAlign: 'center',
+        fontFamily: 'SF Pro Display',
+        marginTop: 10,
+    },
+    balanceContainer: {
+        padding: 20,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        marginHorizontal: 20,
+        marginTop: 10,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+    }
 });
