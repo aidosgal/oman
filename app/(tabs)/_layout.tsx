@@ -35,7 +35,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                     let iconName: any = 'home';
                     let label = 'Profile';
 
-                    if (route.name === 'index') {
+                    if (route.name === 'profile') {
                         iconName = 'home';
                         label = 'Profile';
                     } else if (route.name === 'qrcode') {
@@ -90,7 +90,7 @@ export default function TabsLayout() {
                     headerShown: false,
                 }}
             >
-                <Tabs.Screen name="index" />
+                <Tabs.Screen name="profile" />
                 <Tabs.Screen name="qrcode" />
                 <Tabs.Screen name="settings" />
             </Tabs>
