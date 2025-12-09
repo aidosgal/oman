@@ -1,13 +1,67 @@
-import {View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, ActivityIndicator} from 'react-native';
 import Svg, { ClipPath, Path, Image as SvgImage } from 'react-native-svg';
 import {FontAwesome6} from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
-import {useRouter} from "expo-router";
+import {useRouter, useFocusEffect} from "expo-router";
+import {useState, useCallback} from 'react';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function ProfileScreen() {
     const router = useRouter();
+    const [userName, setUserName] = useState<string | null>(null);
+    const [balance, setBalance] = useState<string>("0.00");
+    const [loading, setLoading] = useState(true);
+
+    const fetchUserData = useCallback(async () => {
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+
+            if (!token) {
+                router.replace("/(auth)/login");
+                return;
+            }
+
+            // Fetch user info
+            const userInfoResponse = await fetch("https://rstow.ru/api/auth/info", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            if (userInfoResponse.ok) {
+                const userInfo = await userInfoResponse.json();
+                setUserName(userInfo.name);
+            }
+
+            // Fetch wallets
+            const walletsResponse = await fetch("https://rstow.ru/api/wallets/my", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            if (walletsResponse.ok) {
+                const wallets = await walletsResponse.json();
+                if (wallets && wallets.length > 0) {
+                    setBalance(wallets[0].balance);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [router]);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchUserData();
+        }, [fetchUserData])
+    );
 
     return (
         <ScrollView style={styles.container}>
@@ -30,14 +84,24 @@ export default function ProfileScreen() {
                     clipPath="url(#clip)"
                 />
             </Svg>
-            <Text style={styles.name}>Noel Blanchard</Text>
-            <View style={styles.balanceContainer}>
-                <View style={{backgroundColor: '#49B3E4', borderRadius: 100, display: "flex", flexDirection: "row", width: 40, height: 40, justifyContent: "center", alignItems: "center"}}>
-                    <FontAwesome6 name="coins" size={18} color="white" />
+            {loading ? (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#49B3E4" />
                 </View>
-                <Text style={{fontSize: 14, fontWeight: 400, marginTop: 5, color: "#838BA7"}}>Your current balance</Text>
-                <Text style={{fontSize: 28, fontWeight: 600, marginTop: 10, color: "#252525"}}>3 422.00 OMR</Text>
-            </View>
+            ) : (
+                <>
+                    {userName && (
+                        <Text style={styles.name}>{userName || "User"}</Text>
+                    )}
+                    <View style={styles.balanceContainer}>
+                        <View style={{backgroundColor: '#49B3E4', borderRadius: 100, display: "flex", flexDirection: "row", width: 40, height: 40, justifyContent: "center", alignItems: "center"}}>
+                            <FontAwesome6 name="coins" size={18} color="white" />
+                        </View>
+                        <Text style={{fontSize: 14, fontWeight: 400, marginTop: 5, color: "#838BA7"}}>Your current balance</Text>
+                        <Text style={{fontSize: 28, fontWeight: 600, marginTop: 10, color: "#252525"}}>{balance} OMR</Text>
+                    </View>
+                </>
+            )}
             <View style={{flexDirection: "row", alignItems: "center", marginHorizontal: 20, marginTop: 15}}>
                 <Text style={{color: "#252525", fontSize: 20, fontWeight: 600}}>Transactions</Text>
                 <TouchableOpacity style={{flexDirection: "row", alignItems : "center", justifyContent: "center", padding: 10, marginLeft: "auto", backgroundColor: "white", borderRadius: 15, paddingHorizontal: 15, borderStyle: "solid", borderWidth: 1, borderColor: "#EAEBF0"}}
@@ -118,10 +182,10 @@ const styles = StyleSheet.create({
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
-            height: 2,
+            height: 0,
         },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
+        shadowOpacity: 0.03,
+        shadowRadius: 5,
         elevation: 3,
     }
 });

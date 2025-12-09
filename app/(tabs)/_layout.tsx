@@ -110,8 +110,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         shadowColor: 'black',
         shadowOffset: { width: 0, height: 15 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
         elevation: 8,
     },
     blurView: {

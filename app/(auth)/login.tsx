@@ -20,7 +20,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function Login() {
   const router = useRouter();
   
-  // State for inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,11 +27,9 @@ export default function Login() {
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Animation values for floating labels
   const emailLabelAnimation = useRef(new Animated.Value(0)).current;
   const passwordLabelAnimation = useRef(new Animated.Value(0)).current;
 
-  // Handle email focus
   const handleEmailFocus = () => {
     setEmailFocused(true);
     Animated.timing(emailLabelAnimation, {
@@ -53,7 +50,6 @@ export default function Login() {
     }
   };
 
-  // Handle password focus
   const handlePasswordFocus = () => {
     setPasswordFocused(true);
     Animated.timing(passwordLabelAnimation, {
@@ -218,27 +214,25 @@ export default function Login() {
           <View style={styles.dividerLine} />
         </View>
 
-        <TouchableOpacity
-                    style={{borderStyle: "solid", borderColor: "#EFEFEF", borderWidth: 1, width: "100%", flexDirection: "row", justifyContent: "center", alignItems: "center", paddingVertical: 15, borderRadius: 100}}
-                    onPress={() => router.push("/(auth)/login")}
-                >
-                    <FontAwesome name="phone" size={24} color="#C0C0C0" />
-                    <Text style={{marginLeft: 10, fontWeight: 400, color: "#2C2D2E"}}>Continue with phone</Text>
-                </TouchableOpacity>
-                <View style={{flexDirection: "row", justifyContent: "space-between", marginTop: 10}}>
-                    <TouchableOpacity style={{borderStyle: "solid", flexDirection: "row", justifyContent: "center", alignItems: "center", borderRadius: 100, borderWidth: 1, borderColor: "#EFEFEF", width: "32%", paddingVertical: 15}}>
-                        <Image source={require("../../assets/images/google-logo.png")} style={{width: 24, height: 24}} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={{borderStyle: "solid", flexDirection: "row", justifyContent: "center", alignItems: "center", borderRadius: 100, borderWidth: 1, borderColor: "#EFEFEF", width: "32%", paddingVertical: 15}}>
-                        <Image source={require("../../assets/images/facebook-logo.png")} style={{width: 24, height: 24}} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={{borderStyle: "solid", flexDirection: "row", justifyContent: "center", alignItems: "center", borderRadius: 100, borderWidth: 1, borderColor: "#EFEFEF", width: "32%", paddingVertical: 15}}>
-                        <Image source={require("../../assets/images/apple-logo.png")} style={{width: 24, height: 24}} />
-                    </TouchableOpacity>
-                </View>
-
-
-    </View>
+          <TouchableOpacity
+              style={{borderStyle: "solid", borderColor: "#EFEFEF", borderWidth: 1, width: "100%", flexDirection: "row", justifyContent: "center", alignItems: "center", paddingVertical: 15, borderRadius: 100}}
+              onPress={() => router.push("/(auth)/login")}
+          >
+              <FontAwesome name="phone" size={24} color="#C0C0C0" />
+              <Text style={{marginLeft: 10, fontWeight: 400, color: "#2C2D2E"}}>Continue with phone</Text>
+          </TouchableOpacity>
+          <View style={{flexDirection: "row", justifyContent: "space-between", marginTop: 10}}>
+              <TouchableOpacity style={{borderStyle: "solid", flexDirection: "row", justifyContent: "center", alignItems: "center", borderRadius: 100, borderWidth: 1, borderColor: "#EFEFEF", width: "32%", paddingVertical: 15}}>
+                  <Image source={require("../../assets/images/google-logo.png")} style={{width: 24, height: 24}} />
+              </TouchableOpacity>
+              <TouchableOpacity style={{borderStyle: "solid", flexDirection: "row", justifyContent: "center", alignItems: "center", borderRadius: 100, borderWidth: 1, borderColor: "#EFEFEF", width: "32%", paddingVertical: 15}}>
+                  <Image source={require("../../assets/images/facebook-logo.png")} style={{width: 24, height: 24}} />
+              </TouchableOpacity>
+              <TouchableOpacity style={{borderStyle: "solid", flexDirection: "row", justifyContent: "center", alignItems: "center", borderRadius: 100, borderWidth: 1, borderColor: "#EFEFEF", width: "32%", paddingVertical: 15}}>
+                  <Image source={require("../../assets/images/apple-logo.png")} style={{width: 24, height: 24}} />
+              </TouchableOpacity>
+          </View>
+        </View>
 
         {/* Login Button at Bottom */}
         <View style={styles.bottomContainer}>
