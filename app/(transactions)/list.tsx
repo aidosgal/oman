@@ -1,10 +1,59 @@
-import {View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView} from "react-native";
-import {Stack, useRouter} from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+interface Transaction {
+    id: number;
+    wallet_id: number;
+    amount: string;
+    type: string;
+    description: string;
+    created_at: string;
+    updated_at: string;
+}
 
 export default function TransactionsList() {
     const router = useRouter();
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchTransactions = useCallback(async () => {
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+
+            if (!token) {
+                router.replace("/(auth)/login");
+                return;
+            }
+
+            const walletsResponse = await fetch("https://rstow.ru/api/wallets/my", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            if (walletsResponse.ok) {
+                const wallets = await walletsResponse.json();
+                if (wallets && wallets.length > 0) {
+                    const allHistories = wallets[0].histories || [];
+                    setTransactions(allHistories);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching transactions:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [router]);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchTransactions();
+        }, [fetchTransactions])
+    );
 
     return (
         <>
@@ -23,78 +72,35 @@ export default function TransactionsList() {
 
             {/* Page content */}
             <ScrollView style={{ flex: 1, backgroundColor: "#F3F4F5", padding: 20 }}>
-                <View>
-                    <Text style={{color: "#838BA7", fontWeight: 600, fontSize: 14}}>May 02 • 2025</Text>
-                    <View style={{flexDirection: "row", alignItems: "center", paddingHorizontal: 15, paddingVertical: 10, backgroundColor: "white", borderRadius: 20, borderStyle: "solid", borderWidth: 1, borderColor: "#EAEBF0", marginTop: 10}}>
-                        <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#FBE5E7", justifyContent: "center", alignItems: "center"}}>
-                            <Feather name="arrow-up-right" size={22} color="#DF3C4C" />
-                        </View>
-                        <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Outcome</Text>
-                        <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#DD584C"}}>+2 652 OMR</Text>
+                {loading ? (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                        <ActivityIndicator size="large" color="#49B3E4" />
                     </View>
-                </View>
-                <View style={{marginTop: 20}}>
-                    <Text style={{color: "#838BA7", fontWeight: 600, fontSize: 14}}>May 02 • 2025</Text>
-                    <View style={{marginTop: 10, borderStyle: "solid", borderWidth: 1, borderRadius: 20, paddingHorizontal: 20, borderColor: "#EAEBF0", backgroundColor: "white"}}>
-                        <View style={{flexDirection: "row", alignItems: "center", borderStyle: "solid", borderBottomWidth: 1, borderColor: "#EAEBF0", marginTop: 10, paddingBottom: 10}}>
-                            <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#EAFBE5", justifyContent: "center", alignItems: "center"}}>
-                                <Feather name="arrow-down-left" size={22} color="#2DB66D" />
+                ) : transactions.length === 0 ? (
+                    <Text style={{color: "#838BA7", textAlign: "center", marginTop: 20}}>No transactions yet</Text>
+                ) : (
+                    transactions.map((transaction, index) => {
+                        const date = new Date(transaction.created_at);
+                        const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) + ' • ' + date.getFullYear();
+                        const isIncome = transaction.type === 'income';
+                        
+                        return (
+                            <View key={transaction.id} style={{marginTop: index > 0 ? 15 : 0}}>
+                                <Text style={{color: "#838BA7", fontWeight: 600, fontSize: 14, marginBottom: 10}}>{formattedDate}</Text>
+                                <View style={{flexDirection: "row", alignItems: "center", paddingHorizontal: 15, paddingVertical: 10, backgroundColor: "white", borderRadius: 20, borderStyle: "solid", borderWidth: 1, borderColor: "#EAEBF0"}}>
+                                    <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: isIncome ? "#EAFBE5" : "#FBE5E7", justifyContent: "center", alignItems: "center"}}>
+                                        <Feather name={isIncome ? "arrow-down-left" : "arrow-up-right"} size={22} color={isIncome ? "#2DB66D" : "#DF3C4C"} />
+                                    </View>
+                                    <View style={{flex: 1, marginLeft: 10}}>
+                                        <Text style={{fontWeight: 600, fontSize: 17, color: "#252525"}}>{isIncome ? 'Income' : 'Outcome'}</Text>
+                                        <Text style={{fontSize: 13, color: "#838BA7", marginTop: 2}}>{transaction.description}</Text>
+                                    </View>
+                                    <Text style={{fontSize: 17, fontWeight: 600, color: isIncome ? "#2DB66D" : "#DD584C"}}>{isIncome ? '+' : '-'}{transaction.amount} OMR</Text>
+                                </View>
                             </View>
-                            <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Income</Text>
-                            <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#2DB66D"}}>+15 248 OMR</Text>
-                        </View>
-                        <View style={{flexDirection: "row", alignItems: "center", borderStyle: "solid", borderBottomWidth: 1, borderColor: "#EAEBF0", marginTop: 10, paddingBottom: 10}}>
-                            <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#EAFBE5", justifyContent: "center", alignItems: "center"}}>
-                                <Feather name="arrow-down-left" size={22} color="#2DB66D" />
-                            </View>
-                            <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Income</Text>
-                            <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#2DB66D"}}>+3 422 OMR</Text>
-                        </View>
-                        <View style={{flexDirection: "row", alignItems: "center", paddingBottom: 10, marginTop: 10}}>
-                            <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#FBE5E7", justifyContent: "center", alignItems: "center"}}>
-                                <Feather name="arrow-up-right" size={22} color="#DF3C4C" />
-                            </View>
-                            <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Outcome</Text>
-                            <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#DD584C"}}>+2 652 OMR</Text>
-                        </View>
-                    </View>
-                </View>
-                <View style={{marginTop: 20}}>
-                    <Text style={{color: "#838BA7", fontWeight: 600, fontSize: 14}}>May 02 • 2025</Text>
-                    <View style={{flexDirection: "row", alignItems: "center", paddingHorizontal: 15, paddingVertical: 10, backgroundColor: "white", borderRadius: 20, borderStyle: "solid", borderWidth: 1, borderColor: "#EAEBF0", marginTop: 10}}>
-                        <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#FBE5E7", justifyContent: "center", alignItems: "center"}}>
-                            <Feather name="arrow-up-right" size={22} color="#DF3C4C" />
-                        </View>
-                        <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Outcome</Text>
-                        <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#DD584C"}}>+2 652 OMR</Text>
-                    </View>
-                </View>
-                <View style={{marginTop: 20}}>
-                    <Text style={{color: "#838BA7", fontWeight: 600, fontSize: 14}}>May 02 • 2025</Text>
-                    <View style={{marginTop: 10, borderStyle: "solid", borderWidth: 1, borderRadius: 20, paddingHorizontal: 20, borderColor: "#EAEBF0", backgroundColor: "white"}}>
-                        <View style={{flexDirection: "row", alignItems: "center", borderStyle: "solid", borderBottomWidth: 1, borderColor: "#EAEBF0", marginTop: 10, paddingBottom: 10}}>
-                            <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#EAFBE5", justifyContent: "center", alignItems: "center"}}>
-                                <Feather name="arrow-down-left" size={22} color="#2DB66D" />
-                            </View>
-                            <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Income</Text>
-                            <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#2DB66D"}}>+15 248 OMR</Text>
-                        </View>
-                        <View style={{flexDirection: "row", alignItems: "center", borderStyle: "solid", borderBottomWidth: 1, borderColor: "#EAEBF0", marginTop: 10, paddingBottom: 10}}>
-                            <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#EAFBE5", justifyContent: "center", alignItems: "center"}}>
-                                <Feather name="arrow-down-left" size={22} color="#2DB66D" />
-                            </View>
-                            <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Income</Text>
-                            <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#2DB66D"}}>+3 422 OMR</Text>
-                        </View>
-                        <View style={{flexDirection: "row", alignItems: "center", paddingBottom: 10, marginTop: 10}}>
-                            <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: "#FBE5E7", justifyContent: "center", alignItems: "center"}}>
-                                <Feather name="arrow-up-right" size={22} color="#DF3C4C" />
-                            </View>
-                            <Text style={{fontWeight: 600, fontSize: 17, color: "#252525", marginLeft: 10}}>Outcome</Text>
-                            <Text style={{marginLeft: "auto", fontSize: 17, fontWeight: 600, color: "#DD584C"}}>+2 652 OMR</Text>
-                        </View>
-                    </View>
-                </View>
+                        );
+                    })
+                )}
             </ScrollView>
         </>
     );

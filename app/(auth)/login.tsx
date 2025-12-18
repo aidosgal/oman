@@ -1,21 +1,21 @@
 import { Feather, FontAwesome, Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, useRouter } from "expo-router";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Image,
+  Keyboard,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  Image,
-  Keyboard,
   TouchableWithoutFeedback,
-  Alert,
-  ActivityIndicator,
-  Animated,
+  View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login() {
   const router = useRouter();
@@ -155,7 +155,7 @@ export default function Login() {
         
         <View style={styles.registerContainer}>
           <Text style={styles.registerText}>Don't have an account yet? </Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
             <Text style={styles.registerLink}>Register</Text>
           </TouchableOpacity>
         </View>

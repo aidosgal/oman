@@ -1,12 +1,13 @@
-import {View, Text, StyleSheet, StatusBar, ScrollView, ActivityIndicator} from 'react-native';
-import {useState, useCallback} from 'react';
-import {useFocusEffect, useRouter} from 'expo-router';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
 export default function QrCodeScreen() {
     const router = useRouter();
     const [qrCodeSvg, setQrCodeSvg] = useState<string | null>(null);
+    const [walletUuid, setWalletUuid] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
     const fetchQRCode = useCallback(async () => {
@@ -30,6 +31,7 @@ export default function QrCodeScreen() {
                 const wallets = await walletsResponse.json();
                 if (wallets && wallets.length > 0) {
                     const walletUuid = wallets[0].uuid;
+                    setWalletUuid(walletUuid);
 
                     // Fetch the QR code SVG
                     const qrResponse = await fetch(`https://rstow.ru/api/wallets/${walletUuid}/qr`, {
@@ -76,6 +78,7 @@ export default function QrCodeScreen() {
                     <Text>QR Code not available</Text>
                 )}
             </View>
+
             <View style={{marginTop: 40}}>
 
                 {/* Step 1 */}
@@ -181,5 +184,20 @@ const styles = StyleSheet.create({
         color: "#838BA7",
         fontSize: 15,
         fontWeight: "400",
+    },
+
+    testButton: {
+        backgroundColor: "#49B3E4",
+        paddingVertical: 16,
+        paddingHorizontal: 24,
+        borderRadius: 12,
+        alignItems: "center",
+        marginTop: 20,
+    },
+
+    testButtonText: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "600",
     },
 })
