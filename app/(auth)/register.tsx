@@ -29,6 +29,10 @@ export default function Register() {
   const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const emailInputRef = useRef<TextInput>(null);
+  const passwordInputRef = useRef<TextInput>(null);
+  const confirmPasswordInputRef = useRef<TextInput>(null);
+
   const emailLabelAnimation = useRef(new Animated.Value(0)).current;
   const passwordLabelAnimation = useRef(new Animated.Value(0)).current;
   const confirmPasswordLabelAnimation = useRef(new Animated.Value(0)).current;
@@ -97,7 +101,7 @@ export default function Register() {
   const emailLabelStyle = {
     top: emailLabelAnimation.interpolate({
       inputRange: [0, 1],
-      outputRange: [20, 8],
+      outputRange: [25, 8],
     }),
     fontSize: emailLabelAnimation.interpolate({
       inputRange: [0, 1],
@@ -112,7 +116,7 @@ export default function Register() {
   const passwordLabelStyle = {
     top: passwordLabelAnimation.interpolate({
       inputRange: [0, 1],
-      outputRange: [20, 8],
+      outputRange: [25, 8],
     }),
     fontSize: passwordLabelAnimation.interpolate({
       inputRange: [0, 1],
@@ -127,7 +131,7 @@ export default function Register() {
   const confirmPasswordLabelStyle = {
     top: confirmPasswordLabelAnimation.interpolate({
       inputRange: [0, 1],
-      outputRange: [20, 8],
+      outputRange: [25, 8],
     }),
     fontSize: confirmPasswordLabelAnimation.interpolate({
       inputRange: [0, 1],
@@ -234,10 +238,11 @@ export default function Register() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Animated.Text style={[styles.label, emailLabelStyle]}>
+          <Animated.Text style={[styles.label, emailLabelStyle]} onPress={() => emailInputRef.current?.focus()}>
             Email address
           </Animated.Text>
           <TextInput
+            ref={emailInputRef}
             style={[
               styles.input,
               (email || emailFocused) && styles.inputWithLabel,
@@ -253,10 +258,11 @@ export default function Register() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Animated.Text style={[styles.label, passwordLabelStyle]}>
+          <Animated.Text style={[styles.label, passwordLabelStyle]} onPress={() => passwordInputRef.current?.focus()}>
             Enter password
           </Animated.Text>
           <TextInput
+            ref={passwordInputRef}
             style={[
               styles.input,
               (password || passwordFocused) && styles.inputWithLabel,
@@ -271,6 +277,7 @@ export default function Register() {
           <TouchableOpacity
             style={styles.eyeIcon}
             onPress={() => setShowPassword(!showPassword)}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           >
             <Ionicons
               name={showPassword ? "eye-outline" : "eye-off-outline"}
@@ -281,10 +288,11 @@ export default function Register() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Animated.Text style={[styles.label, confirmPasswordLabelStyle]}>
+          <Animated.Text style={[styles.label, confirmPasswordLabelStyle]} onPress={() => confirmPasswordInputRef.current?.focus()}>
             Confirm password
           </Animated.Text>
           <TextInput
+            ref={confirmPasswordInputRef}
             style={[
               styles.input,
               (confirmPassword || confirmPasswordFocused) && styles.inputWithLabel,
@@ -299,6 +307,7 @@ export default function Register() {
           <TouchableOpacity
             style={styles.eyeIcon}
             onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           >
             <Ionicons
               name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
@@ -396,7 +405,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   input: {
-    height: 62,
+    height: 70,
     borderWidth: 1,
     borderColor: "#E5E5E5",
     borderRadius: 12,

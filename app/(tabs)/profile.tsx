@@ -23,6 +23,7 @@ export default function ProfileScreen() {
     const [userName, setUserName] = useState<string | null>(null);
     const [balance, setBalance] = useState<string>("0.00");
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [avatar, setAvatar] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
     const fetchUserData = useCallback(async () => {
@@ -45,6 +46,8 @@ export default function ProfileScreen() {
             if (userInfoResponse.ok) {
                 const userInfo = await userInfoResponse.json();
                 setUserName(userInfo.name);
+                setAvatar(userInfo.avatar_url);
+                console.log("User Info:", userInfo);
             }
 
             // Fetch wallets
@@ -74,6 +77,9 @@ export default function ProfileScreen() {
     useFocusEffect(
         useCallback(() => {
             fetchUserData();
+            if (!avatar) {
+                setAvatar(require("../../assets/images/placeholder.png"));
+            }
         }, [fetchUserData])
     );
 
@@ -91,7 +97,7 @@ export default function ProfileScreen() {
                     />
                 </ClipPath>
                 <SvgImage
-                    href={require('../../assets/images/avatar.png')}
+                    href={avatar || require('../../assets/images/placeholder.png')}
                     width={screenWidth}
                     height={320}
                     preserveAspectRatio="xMidYMid slice"

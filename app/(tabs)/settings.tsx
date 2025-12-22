@@ -1,11 +1,33 @@
-import {View, Text, StyleSheet, TouchableOpacity, StatusBar, Switch} from 'react-native';
 import Feather from "@expo/vector-icons/Feather";
-import {useRouter} from "expo-router";
-import {useState} from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Alert, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 
 export default function SettingsScreen() {
     const router = useRouter();
     const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+    const handleClearStorage = async () => {
+        Alert.alert(
+            "Clear Storage",
+            "Are you sure you want to clear all app data?",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Clear",
+                    style: "destructive",
+                    onPress: async () => {
+                        await AsyncStorage.clear();
+                        Alert.alert("Success", "Storage cleared successfully");
+                    }
+                }
+            ]
+        );
+    };
 
     return (
         <View>
@@ -66,6 +88,28 @@ export default function SettingsScreen() {
                         </TouchableOpacity>
                     </View>
                 </View>
+                <TouchableOpacity 
+                    style={{
+                        marginTop: 20,
+                        marginBottom: 40,
+                        backgroundColor: "white", 
+                        paddingVertical: 16, 
+                        borderRadius: 20, 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        borderWidth: 1, 
+                        borderColor: "#EAEBF0",
+                        flexDirection: "row",
+                        gap: 8
+                    }}
+                    onPress={async () => {
+                        await AsyncStorage.removeItem('userToken');
+                        router.replace('/(auth)');
+                    }}
+                >
+                    <Feather name="log-out" size={20} color="#FF3B30" />
+                    <Text style={{fontSize: 16, fontWeight: "600", color: "#FF3B30"}}>Log out</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );

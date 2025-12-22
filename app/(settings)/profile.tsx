@@ -1,9 +1,9 @@
-import {Animated, Image, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator} from "react-native";
-import {Stack, useRouter} from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
-import {useRef, useState, useEffect} from "react";
-import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
+import { Stack, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Alert, Animated, Image, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function UpdateProfile() {
   const router = useRouter();
@@ -13,6 +13,8 @@ export default function UpdateProfile() {
   const [description, setDescription] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const nameInputRef = useRef<TextInput>(null);
 
   const nameLabelAnimation = useRef(new Animated.Value(0)).current;
 
@@ -72,7 +74,7 @@ export default function UpdateProfile() {
   const nameLabelStyle = {
     top: nameLabelAnimation.interpolate({
       inputRange: [0, 1],
-      outputRange: [20, 8],
+      outputRange: [25, 8],
     }),
     fontSize: nameLabelAnimation.interpolate({
       inputRange: [0, 1],
@@ -158,7 +160,11 @@ export default function UpdateProfile() {
   };
 
   return (
-    <View style={{flex: 1}}>
+    <KeyboardAvoidingView 
+      style={{flex: 1, backgroundColor: "#F5F5F5"}}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={0}
+    >
       <StatusBar barStyle="dark-content" />
       <Stack.Screen options={{ headerShown: false }} />
 
@@ -172,56 +178,66 @@ export default function UpdateProfile() {
         <View style={{ width: 24 }} />
       </View>
 
-      <View style={{marginTop: 30, paddingHorizontal: 20, flex: 1}}>
-        <View style={{flexDirection: "column", zIndex: 20}}>
-          <TouchableOpacity onPress={pickImage}>
-            <Image
-              style={{width: 100, height: 100, borderRadius: 20, marginHorizontal: "auto", marginBottom: -20}}
-              source={avatar ? { uri: avatar } : require("../../assets/images/avatar.png")}
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={{padding: 20, backgroundColor: "white", borderRadius: 20, zIndex: 10, paddingTop: 40}}>
-          <View style={styles.inputContainer}>
-            <Animated.Text style={[styles.label, nameLabelStyle]}>
-              Name
-            </Animated.Text>
-            <TextInput
-              style={[
-                styles.input,
-                (name || nameFocused) && styles.inputWithLabel,
-                nameFocused && styles.inputFocused,
-              ]}
-              value={name}
-              onChangeText={setName}
-              onFocus={handleNameFocus}
-              onBlur={handleNameBlur}
-              autoCapitalize="words"
-            />
+      <ScrollView 
+        style={{flex: 1}}
+        contentContainerStyle={{paddingBottom: 100}}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={{marginTop: 30, paddingHorizontal: 20}}>
+          <View style={{flexDirection: "column", zIndex: 20}}>
+            <TouchableOpacity onPress={pickImage} activeOpacity={0.7}>
+              <Image
+                style={{width: 100, height: 100, borderRadius: 20, marginHorizontal: "auto", marginBottom: -20}}
+                source={avatar ? { uri: avatar } : require("../../assets/images/avatar.png")}
+              />
+            </TouchableOpacity>
           </View>
-          <Text style={{fontWeight: 400, fontSize: 14, color: "#838BA7"}}>max {name.length}/50</Text>
+          <View style={{padding: 20, backgroundColor: "white", borderRadius: 20, zIndex: 10, paddingTop: 40}}>
+            <View style={styles.inputContainer}>
+              <Animated.Text style={[styles.label, nameLabelStyle]} onPress={() => nameInputRef.current?.focus()}>
+                Full Name
+              </Animated.Text>
+              <TextInput
+                ref={nameInputRef}
+                style={[
+                  styles.input,
+                  (name || nameFocused) && styles.inputWithLabel,
+                  nameFocused && styles.inputFocused,
+                ]}
+                value={name}
+                onChangeText={setName}
+                onFocus={handleNameFocus}
+                onBlur={handleNameBlur}
+                autoCapitalize="words"
+                returnKeyType="next"
+              />
+            </View>
+            <Text style={{fontWeight: "400", fontSize: 14, color: "#838BA7"}}>max {name.length}/50</Text>
 
-          <View style={[styles.inputContainer, {marginTop: 20}]}>
-            <Text style={{fontWeight: 500, fontSize: 14, color: "#000", marginBottom: 8}}>Description of the situation</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={description}
-              onChangeText={(text) => {
-                if (text.length <= 120) {
-                  setDescription(text);
-                }
-              }}
-              placeholder="Tell us about yourself"
-              placeholderTextColor="#999"
-              multiline
-              numberOfLines={4}
-              maxLength={120}
-              textAlignVertical="top"
-            />
+            <View style={[styles.inputContainer, {marginTop: 20}]}>
+              <Text style={{fontWeight: "500", fontSize: 14, color: "#000", marginBottom: 8}}>Description of the situation</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={description}
+                onChangeText={(text) => {
+                  if (text.length <= 120) {
+                    setDescription(text);
+                  }
+                }}
+                placeholder="Tell us about yourself"
+                placeholderTextColor="#999"
+                multiline
+                numberOfLines={4}
+                maxLength={120}
+                textAlignVertical="top"
+                returnKeyType="done"
+              />
+            </View>
+            <Text style={{fontWeight: "400", fontSize: 14, color: "#838BA7"}}>max {description.length}/120</Text>
           </View>
-          <Text style={{fontWeight: 400, fontSize: 14, color: "#838BA7"}}>max {description.length}/120</Text>
         </View>
-      </View>
+      </ScrollView>
 
       {/* Bottom Button */}
       <View style={styles.bottomContainer}>
@@ -232,6 +248,7 @@ export default function UpdateProfile() {
           ]}
           disabled={!name || !description || loading}
           onPress={handleUpdateProfile}
+          activeOpacity={0.8}
         >
           {loading ? (
             <ActivityIndicator color="white" />
@@ -245,15 +262,15 @@ export default function UpdateProfile() {
           )}
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
   customHeader: {
-    paddingTop: 60,
+    paddingTop: Platform.OS === "ios" ? 60 : 45,
     paddingHorizontal: 20,
-    height: 120,
+    height: Platform.OS === "ios" ? 120 : 100,
     backgroundColor: "white",
     flexDirection: "row",
     alignItems: "center",
@@ -300,9 +317,16 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   bottomContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: Platform.OS === "ios" ? 34 : 20,
+    paddingTop: 12,
     backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
   },
   updateButton: {
     height: 56,
