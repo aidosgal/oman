@@ -64,81 +64,83 @@ export default function QrCodeScreen() {
     return (
         <ScrollView style={styles.container}>
             <StatusBar barStyle="dark-content" />
-            <Text style={{fontWeight: 500, fontSize: 26, textAlign: "center", marginTop: 100}}>Scan to transfer</Text>
-            <View style={{marginHorizontal: "auto", padding: 20, borderRadius: 20, backgroundColor: "white", marginTop: 20, width: "100%", flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+            <Text style={{ fontWeight: 500, fontSize: 26, textAlign: "center", marginTop: 100 }}>Scan to transfer</Text>
+            <View style={{ marginHorizontal: "auto", padding: 20, borderRadius: 20, backgroundColor: "white", marginTop: 20, width: "100%", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
                 {loading ? (
                     <ActivityIndicator size="large" color="#49B3E4" />
                 ) : qrCodeSvg ? (
-                    <SvgXml
-                        xml={qrCodeSvg}
-                        width="250"
-                        height="250"
-                    />
+                    <View>
+                        <SvgXml
+                            xml={qrCodeSvg}
+                            width="250"
+                            height="250"
+                        />
+                    </View>
                 ) : (
                     <Text>QR Code not available</Text>
                 )}
             </View>
 
-            <View style={{marginTop: 40}}>
+            <View style={{ marginTop: 40 }}>
 
                 {/* Step 1 */}
-                <View style={{flexDirection: "row"}}>
+                <View style={{ flexDirection: "row" }}>
                     {/* Number + Line container */}
-                    <View style={{alignItems: "center"}}>
+                    <View style={{ alignItems: "center" }}>
                         {/* Number circle */}
                         <View style={styles.circle}>
                             <Text>1</Text>
                         </View>
                         {/* Vertical line */}
-                        <View style={styles.line}/>
+                        <View style={styles.line} />
                     </View>
 
                     {/* Text */}
-                    <View style={{marginLeft: 10, flex: 1}}>
+                    <View style={{ marginLeft: 10, flex: 1 }}>
                         <Text style={styles.title}>Point the camera at the QR code.</Text>
                         <Text style={styles.subtitle}>Make sure the code is fully visible in the frame.</Text>
                     </View>
                 </View>
 
                 {/* Step 2 */}
-                <View style={{flexDirection: "row"}}>
-                    <View style={{alignItems: "center"}}>
+                <View style={{ flexDirection: "row" }}>
+                    <View style={{ alignItems: "center" }}>
                         <View style={styles.circle}>
                             <Text>2</Text>
                         </View>
-                        <View style={styles.line}/>
+                        <View style={styles.line} />
                     </View>
 
-                    <View style={{marginLeft: 10, flex: 1}}>
+                    <View style={{ marginLeft: 10, flex: 1 }}>
                         <Text style={styles.title}>Check the recipient's information.</Text>
                         <Text style={styles.subtitle}>Before confirming, make sure the name and account number are correct.</Text>
                     </View>
                 </View>
 
                 {/* Step 3 */}
-                <View style={{flexDirection: "row"}}>
-                    <View style={{alignItems: "center"}}>
+                <View style={{ flexDirection: "row" }}>
+                    <View style={{ alignItems: "center" }}>
                         <View style={styles.circle}>
                             <Text>3</Text>
                         </View>
-                        <View style={styles.line}/>
+                        <View style={styles.line} />
                     </View>
 
-                    <View style={{marginLeft: 10, flex: 1}}>
+                    <View style={{ marginLeft: 10, flex: 1 }}>
                         <Text style={styles.title}>Enter the transfer amount.</Text>
                         <Text style={styles.subtitle}>Before confirming, make sure the name and account number are correct.</Text>
                     </View>
                 </View>
 
                 {/* Step 4 — last (no line below) */}
-                <View style={{flexDirection: "row"}}>
-                    <View style={{alignItems: "center"}}>
+                <View style={{ flexDirection: "row" }}>
+                    <View style={{ alignItems: "center" }}>
                         <View style={styles.circle}>
                             <Text>4</Text>
                         </View>
                     </View>
 
-                    <View style={{marginLeft: 10, flex: 1}}>
+                    <View style={{ marginLeft: 10, flex: 1 }}>
                         <Text style={styles.title}>Confirm the transfer.</Text>
                         <Text style={styles.subtitle}>Click "Send" or "Pay."</Text>
                     </View>

@@ -1,9 +1,8 @@
-import { Tabs } from "expo-router";
-import Feather from '@expo/vector-icons/Feather';
-import { View, Platform, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import Feather from '@expo/vector-icons/Feather';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { Tabs } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     return (
@@ -139,6 +138,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 25,
         borderRadius: 15,
         minWidth: 95,
+        overflow: 'hidden',
     },
     tabItemActive: {
         backgroundColor: '#E7F6FC',

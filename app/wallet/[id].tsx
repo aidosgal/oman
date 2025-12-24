@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Keyboard, ScrollView, Share, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import SuccessScreen from "../../components/SuccessScreen";
 
 interface WalletPublicInfo {
     wallet_uuid: string;
@@ -21,6 +22,7 @@ export default function WalletPage() {
     const [amount, setAmount] = useState("");
     const [sending, setSending] = useState(false);
     const [selectedQuickAmount, setSelectedQuickAmount] = useState<number | null>(null);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     const quickAmounts = [10, 50, 100];
 
@@ -37,11 +39,11 @@ export default function WalletPage() {
         try {
             // Handle case where id might be an array
             const walletId = Array.isArray(id) ? id[0] : id;
-            
+
             console.log("Processed walletId:", walletId);
             console.log("WalletId type:", typeof walletId);
             console.log("WalletId length:", walletId?.length);
-            
+
             if (!walletId) {
                 console.error("ERROR: No wallet ID provided");
                 Alert.alert("Error", "No wallet ID provided");
@@ -56,7 +58,7 @@ export default function WalletPage() {
             const url = `https://rstow.ru/api/wallets/public/${walletId}`;
             console.log("Fetching URL:", url);
             console.log("Fetch starting at:", new Date().toISOString());
-            
+
             const headers: Record<string, string> = {};
             if (token) {
                 headers["Authorization"] = `Bearer ${token}`;
@@ -64,7 +66,7 @@ export default function WalletPage() {
             } else {
                 console.log("No token found, fetching without auth");
             }
-            
+
             const response = await fetch(url, {
                 method: "GET",
                 headers: headers,
@@ -74,7 +76,7 @@ export default function WalletPage() {
             console.log("Response status:", response.status);
             console.log("Response statusText:", response.statusText);
             console.log("Response headers:", JSON.stringify(Object.fromEntries(response.headers.entries())));
-            
+
             if (response.ok) {
                 const data = await response.json();
                 console.log("SUCCESS: Wallet data received:", JSON.stringify(data, null, 2));
@@ -102,7 +104,7 @@ export default function WalletPage() {
         console.log("\n=== handleSendMoney START ===");
         console.log("Amount entered:", amount);
         console.log("Amount parsed:", parseFloat(amount));
-        
+
         if (!amount || parseFloat(amount) <= 0) {
             console.log("ERROR: Invalid amount");
             Alert.alert("Error", "Please enter a valid amount");
@@ -113,7 +115,7 @@ export default function WalletPage() {
         const token = await AsyncStorage.getItem("userToken");
         console.log("Token exists:", !!token);
         console.log("Token length:", token?.length);
-        
+
         if (!token) {
             console.log("ERROR: No token found, redirecting to login");
             Alert.alert("Error", "Please login first");
@@ -131,11 +133,11 @@ export default function WalletPage() {
             const body = {
                 amount: parseFloat(amount),
             };
-            
+
             console.log("Send URL:", url);
             console.log("Send body:", JSON.stringify(body));
             console.log("Request starting at:", new Date().toISOString());
-            
+
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
@@ -148,21 +150,18 @@ export default function WalletPage() {
             console.log("Response received at:", new Date().toISOString());
             console.log("Response status:", response.status);
             console.log("Response statusText:", response.statusText);
-            
+
             const data = await response.json();
             console.log("Response data:", JSON.stringify(data, null, 2));
 
             if (response.ok) {
                 console.log("SUCCESS: Money sent successfully");
-                Alert.alert("Success", "Money sent successfully!", [
-                    {
-                        text: "OK",
-                        onPress: () => {
-                            setAmount("");
-                            router.back();
-                        }
-                    }
-                ]);
+                setShowSuccess(true);
+                setTimeout(() => {
+                    setShowSuccess(false);
+                    setAmount("");
+                    router.back();
+                }, 2000);
             } else {
                 console.error("ERROR: Send failed");
                 console.error("Error message from API:", data.message);
@@ -209,6 +208,8 @@ export default function WalletPage() {
                 <StatusBar barStyle="dark-content" />
                 <Stack.Screen options={{ headerShown: false }} />
 
+                <SuccessScreen visible={showSuccess} />
+
                 <View style={styles.customHeader}>
                     <TouchableOpacity
                         onPress={() => router.back()}
@@ -226,87 +227,87 @@ export default function WalletPage() {
                 ) : walletInfo ? (
                     <>
                         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-                        {/* Avatar at top */}
-                        <View style={styles.avatarContainer}>
-                            <View style={styles.avatar}>
-                                <Text style={styles.avatarText}>{walletInfo.owner?.charAt(0) || 'W'}</Text>
+                            {/* Avatar at top */}
+                            <View style={styles.avatarContainer}>
+                                <View style={styles.avatar}>
+                                    <Text style={styles.avatarText}>{walletInfo.owner?.charAt(0) || 'W'}</Text>
+                                </View>
                             </View>
-                        </View>
 
-                        {/* Profile Info Box */}
-                        <View style={styles.profileBox}>
-                            <Text style={styles.ownerName}>{walletInfo.owner || walletInfo.title || "Wallet"}</Text>
-                            
-                            {walletInfo.description && (
-                                <Text style={styles.description}>{walletInfo.description}</Text>
-                            )}
-                        </View>
+                            {/* Profile Info Box */}
+                            <View style={styles.profileBox}>
+                                <Text style={styles.ownerName}>{walletInfo.owner || walletInfo.title || "Wallet"}</Text>
 
-                        <View style={{backgroundColor: "white", borderRadius: 20, padding: 20}}>
-                        {/* Amount Input Section */}
-                        <View style={styles.inputSection}>
-                            <Text style={styles.inputLabel}>Enter the transfer amount</Text>
-                            <View style={styles.amountInputContainer}>
-                                <TextInput
-                                    style={styles.amountInput}
-                                    value={amount}
-                                    onChangeText={handleAmountChange}
-                                    keyboardType="decimal-pad"
-                                    placeholder="0"
-                                    placeholderTextColor="#999"
-                                />
-                                <Text style={styles.currency}>OMR</Text>
+                                {walletInfo.description && (
+                                    <Text style={styles.description}>{walletInfo.description}</Text>
+                                )}
                             </View>
-                        </View>
 
-                        {/* Quick Amount Buttons */}
-                        <View style={styles.quickAmountsContainer}>
-                            {quickAmounts.map((quickAmount) => (
-                                <TouchableOpacity
-                                    key={quickAmount}
-                                    style={[
-                                        styles.quickAmountButton,
-                                        selectedQuickAmount === quickAmount && styles.quickAmountButtonActive
-                                    ]}
-                                    onPress={() => handleQuickAmount(quickAmount)}
-                                >
-                                    <Text style={[
-                                        styles.quickAmountText,
-                                        selectedQuickAmount === quickAmount && styles.quickAmountTextActive
-                                    ]}>
-                                        {quickAmount} omr
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                        </View>
-                    </ScrollView>
-                    
-                    {/* Bottom Buttons */}
-                    <View style={styles.bottomButtons}>
-                        <TouchableOpacity
-                            style={[
-                                styles.sendButton,
-                                (!amount || sending) && styles.sendButtonDisabled
-                            ]}
-                            disabled={!amount || sending}
-                            onPress={handleSendMoney}
-                        >
-                            {sending ? (
-                                <ActivityIndicator color="white" />
-                            ) : (
-                                <Text style={styles.sendButtonText}>Make a transaction</Text>
-                            )}
-                        </TouchableOpacity>
+                            <View style={{ backgroundColor: "white", borderRadius: 20, padding: 20 }}>
+                                {/* Amount Input Section */}
+                                <View style={styles.inputSection}>
+                                    <Text style={styles.inputLabel}>Enter the transfer amount</Text>
+                                    <View style={styles.amountInputContainer}>
+                                        <TextInput
+                                            style={styles.amountInput}
+                                            value={amount}
+                                            onChangeText={handleAmountChange}
+                                            keyboardType="decimal-pad"
+                                            placeholder="0"
+                                            placeholderTextColor="#999"
+                                        />
+                                        <Text style={styles.currency}>OMR</Text>
+                                    </View>
+                                </View>
 
-                        <TouchableOpacity
-                            style={styles.shareButton}
-                            onPress={handleShareLink}
-                        >
-                            <Text style={styles.shareButtonText}>Share link</Text>
-                            <Feather name="arrow-right" size={16} color="#49B3E4" style={{ marginLeft: 6 }} />
-                        </TouchableOpacity>
-                    </View>
+                                {/* Quick Amount Buttons */}
+                                <View style={styles.quickAmountsContainer}>
+                                    {quickAmounts.map((quickAmount) => (
+                                        <TouchableOpacity
+                                            key={quickAmount}
+                                            style={[
+                                                styles.quickAmountButton,
+                                                selectedQuickAmount === quickAmount && styles.quickAmountButtonActive
+                                            ]}
+                                            onPress={() => handleQuickAmount(quickAmount)}
+                                        >
+                                            <Text style={[
+                                                styles.quickAmountText,
+                                                selectedQuickAmount === quickAmount && styles.quickAmountTextActive
+                                            ]}>
+                                                {quickAmount} omr
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        </ScrollView>
+
+                        {/* Bottom Buttons */}
+                        <View style={styles.bottomButtons}>
+                            <TouchableOpacity
+                                style={[
+                                    styles.sendButton,
+                                    (!amount || sending) && styles.sendButtonDisabled
+                                ]}
+                                disabled={!amount || sending}
+                                onPress={handleSendMoney}
+                            >
+                                {sending ? (
+                                    <ActivityIndicator color="white" />
+                                ) : (
+                                    <Text style={styles.sendButtonText}>Make a transaction</Text>
+                                )}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={styles.shareButton}
+                                onPress={handleShareLink}
+                            >
+                                <Text style={styles.shareButtonText}>Share link</Text>
+                                <Feather name="arrow-right" size={16} color="#49B3E4" style={{ marginLeft: 6 }} />
+                            </TouchableOpacity>
+                        </View>
                     </>
                 ) : (
                     <View style={styles.errorContainer}>

@@ -3,7 +3,7 @@ import Feather from "@expo/vector-icons/Feather";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { ClipPath, Path, Image as SvgImage } from 'react-native-svg';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -25,6 +25,7 @@ export default function ProfileScreen() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [avatar, setAvatar] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
     const fetchUserData = useCallback(async () => {
         try {
@@ -64,15 +65,23 @@ export default function ProfileScreen() {
                     setBalance(wallets[0].balance);
                     // Get first 4 transactions from histories
                     const allHistories = wallets[0].histories || [];
-                    setTransactions(allHistories.slice(0, 4));
+                    // Sort by newest first
+                    const sortedHistories = allHistories.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                    setTransactions(sortedHistories.slice(0, 4));
                 }
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }, [router]);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        fetchUserData();
+    }, [fetchUserData]);
 
     useFocusEffect(
         useCallback(() => {
@@ -84,12 +93,18 @@ export default function ProfileScreen() {
     );
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView
+            style={styles.container}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#49B3E4" />
+            }
+        >
             <Svg
                 width={screenWidth}
                 height={320}
                 viewBox="0 0 375 300"
                 style={styles.svg}
+                preserveAspectRatio="none"
             >
                 <ClipPath id="clip">
                     <Path
@@ -114,44 +129,44 @@ export default function ProfileScreen() {
                         <Text style={styles.name}>{userName || "User"}</Text>
                     )}
                     <View style={styles.balanceContainer}>
-                        <View style={{backgroundColor: '#49B3E4', borderRadius: 100, display: "flex", flexDirection: "row", width: 40, height: 40, justifyContent: "center", alignItems: "center"}}>
+                        <View style={{ backgroundColor: '#49B3E4', borderRadius: 100, display: "flex", flexDirection: "row", width: 40, height: 40, justifyContent: "center", alignItems: "center" }}>
                             <FontAwesome6 name="coins" size={18} color="white" />
                         </View>
-                        <Text style={{fontSize: 14, fontWeight: 400, marginTop: 5, color: "#838BA7"}}>Your current balance</Text>
-                        <Text style={{fontSize: 28, fontWeight: 600, marginTop: 10, color: "#252525"}}>{balance} OMR</Text>
+                        <Text style={{ fontSize: 14, fontWeight: 400, marginTop: 5, color: "#838BA7" }}>Your current balance</Text>
+                        <Text style={{ fontSize: 28, fontWeight: 600, marginTop: 10, color: "#252525" }}>{balance} OMR</Text>
                     </View>
                 </>
             )}
-            <View style={{flexDirection: "row", alignItems: "center", marginHorizontal: 20, marginTop: 15}}>
-                <Text style={{color: "#252525", fontSize: 20, fontWeight: 600}}>Transactions</Text>
-                <TouchableOpacity style={{flexDirection: "row", alignItems : "center", justifyContent: "center", padding: 10, marginLeft: "auto", backgroundColor: "white", borderRadius: 15, paddingHorizontal: 15, borderStyle: "solid", borderWidth: 1, borderColor: "#EAEBF0"}}
-                                  onPress={() => router.push("/(transactions)/list")}
+            <View style={{ flexDirection: "row", alignItems: "center", marginHorizontal: 20, marginTop: 15 }}>
+                <Text style={{ color: "#252525", fontSize: 20, fontWeight: 600 }}>Transactions</Text>
+                <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", padding: 10, marginLeft: "auto", backgroundColor: "white", borderRadius: 15, paddingHorizontal: 15, borderStyle: "solid", borderWidth: 1, borderColor: "#EAEBF0" }}
+                    onPress={() => router.push("/(transactions)/list")}
                 >
-                    <Text style={{color: "#252525", fontWeight: 600}}>All</Text>
+                    <Text style={{ color: "#252525", fontWeight: 600 }}>All</Text>
                     <Feather name="chevron-right" size={18} color="#252525" />
                 </TouchableOpacity>
             </View>
-            <View style={{marginTop: 20, borderTopRightRadius: 20, borderTopLeftRadius: 20, backgroundColor: "white", padding: 20, paddingBottom: 120}}>
+            <View style={{ marginTop: 20, borderTopRightRadius: 20, borderTopLeftRadius: 20, backgroundColor: "white", padding: 20, paddingBottom: 120 }}>
                 {transactions.length === 0 ? (
-                    <Text style={{color: "#838BA7", textAlign: "center", marginTop: 20}}>No transactions yet</Text>
+                    <Text style={{ color: "#838BA7", textAlign: "center", marginTop: 20 }}>No transactions yet</Text>
                 ) : (
                     transactions.map((transaction, index) => {
                         const date = new Date(transaction.created_at);
                         const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) + ' • ' + date.getFullYear();
                         const isIncome = transaction.type === 'income';
-                        
+
                         return (
-                            <View key={transaction.id} style={{marginTop: index > 0 ? 15 : 0}}>
-                                <Text style={{color: "#838BA7", fontWeight: 600, fontSize: 14, marginBottom: 10}}>{formattedDate}</Text>
-                                <View style={{flexDirection: "row", alignItems: "center", paddingHorizontal: 15, paddingVertical: 10, backgroundColor: "white", borderRadius: 20, borderStyle: "solid", borderWidth: 1, borderColor: "#EAEBF0"}}>
-                                    <View style={{width: 40, height: 40, borderRadius: 100, backgroundColor: isIncome ? "#EAFBE5" : "#FBE5E7", justifyContent: "center", alignItems: "center"}}>
+                            <View key={transaction.id} style={{ marginTop: index > 0 ? 15 : 0 }}>
+                                <Text style={{ color: "#838BA7", fontWeight: 600, fontSize: 14, marginBottom: 10 }}>{formattedDate}</Text>
+                                <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 15, paddingVertical: 10, backgroundColor: "white", borderRadius: 20, borderStyle: "solid", borderWidth: 1, borderColor: "#EAEBF0" }}>
+                                    <View style={{ width: 40, height: 40, borderRadius: 100, backgroundColor: isIncome ? "#EAFBE5" : "#FBE5E7", justifyContent: "center", alignItems: "center" }}>
                                         <Feather name={isIncome ? "arrow-down-left" : "arrow-up-right"} size={22} color={isIncome ? "#2DB66D" : "#DF3C4C"} />
                                     </View>
-                                    <View style={{flex: 1, marginLeft: 10}}>
-                                        <Text style={{fontWeight: 600, fontSize: 17, color: "#252525"}}>{isIncome ? 'Income' : 'Outcome'}</Text>
-                                        <Text style={{fontSize: 13, color: "#838BA7", marginTop: 2}}>{transaction.description}</Text>
+                                    <View style={{ flex: 1, marginLeft: 10 }}>
+                                        <Text style={{ fontWeight: 600, fontSize: 17, color: "#252525" }}>{isIncome ? 'Income' : 'Outcome'}</Text>
+                                        <Text style={{ fontSize: 13, color: "#838BA7", marginTop: 2 }}>{transaction.description}</Text>
                                     </View>
-                                    <Text style={{fontSize: 17, fontWeight: 600, color: isIncome ? "#2DB66D" : "#DD584C"}}>{isIncome ? '+' : '-'}{transaction.amount} OMR</Text>
+                                    <Text style={{ fontSize: 17, fontWeight: 600, color: isIncome ? "#2DB66D" : "#DD584C" }}>{isIncome ? '+' : '-'}{transaction.amount} OMR</Text>
                                 </View>
                             </View>
                         );
