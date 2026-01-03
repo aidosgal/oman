@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Share, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
 export default function QrCodeScreen() {
@@ -61,6 +61,19 @@ export default function QrCodeScreen() {
         }, [fetchQRCode])
     );
 
+
+
+    const onShare = async () => {
+        if (!walletUuid) return;
+        try {
+            await Share.share({
+                message: `oman://wallet/${walletUuid}`,
+            });
+        } catch (error: any) {
+            Alert.alert(error.message);
+        }
+    };
+
     return (
         <ScrollView style={styles.container}>
             <StatusBar barStyle="dark-content" />
@@ -80,6 +93,12 @@ export default function QrCodeScreen() {
                     <Text>QR Code not available</Text>
                 )}
             </View>
+
+            {walletUuid && (
+                <TouchableOpacity style={styles.shareButton} onPress={onShare}>
+                    <Text style={styles.shareButtonText}>Share My Link</Text>
+                </TouchableOpacity>
+            )}
 
             <View style={{ marginTop: 40 }}>
 
@@ -188,7 +207,7 @@ const styles = StyleSheet.create({
         fontWeight: "400",
     },
 
-    testButton: {
+    shareButton: {
         backgroundColor: "#49B3E4",
         paddingVertical: 16,
         paddingHorizontal: 24,
@@ -197,7 +216,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
 
-    testButtonText: {
+    shareButtonText: {
         color: "white",
         fontSize: 16,
         fontWeight: "600",
